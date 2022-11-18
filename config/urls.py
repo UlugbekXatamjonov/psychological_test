@@ -18,11 +18,34 @@ from django.urls import path, include
 from django.conf import settings
 from django.conf.urls.static import static
 
+from rest_framework import permissions
+from drf_yasg.views import get_schema_view
+from drf_yasg import openapi
+
+schema_view = get_schema_view(
+    openapi.Info(
+        title='Psihologik test websayti',
+        description='Psihologik test websayti Psihologik test websayti ', 
+        default_version='v1',
+        terms_of_service='https://google.com.policies.terms',
+        contact=openapi.Contact(email="xatamjonovulugbek17@gmail.com"),
+        license=openapi.License('Test API litsenziasi'),
+        ),
+        public=True,
+        permission_classes=(permissions.IsAuthenticated, ),
+)
+
+
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('api-auth/', include('rest_framework.urls')),
     path('dj-rest-auth/', include('dj_rest_auth.urls')),
+    path('accounts/', include('allauth.urls')),
     
+    path('swagger/', schema_view.with_ui('swagger', cache_timeout=0), name='schema-swagger-ui'),
+    path('redoc/', schema_view.with_ui('redoc', cache_timeout=0), name='schema-radoc'),
+    
+
     path('admin-api/', include('mainapp.urls'))
 ]
 
