@@ -1,14 +1,14 @@
-from django.urls import path
+from django.urls import path, include
+from rest_framework import routers
 
-from .views import ContactListView, ContactDetailView, PostListView, PostDetailView
+from .views import ContactViewset, PostViewset
 
-app_name = 'mainapp'
+
+router = routers.DefaultRouter()
+router.register(r'post', PostViewset, basename='post')
+router.register(r'contact', ContactViewset, basename='contact')
 
 urlpatterns = [
-    path('post/<int:pk>/<slug:slug>/', PostDetailView.as_view()),
-    path('post/', PostListView.as_view()),
-	
-	path('contact/<int:pk>/<slug:slug>/', ContactDetailView.as_view()),
-    path('contact/', ContactListView.as_view()),
+	path('', include(router.urls)),
 ]
 

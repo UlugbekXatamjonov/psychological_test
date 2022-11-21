@@ -1,6 +1,8 @@
 from django.shortcuts import render, get_object_or_404
 
 from rest_framework.generics import ListCreateAPIView, RetrieveUpdateDestroyAPIView, ListAPIView, RetrieveAPIView
+from rest_framework.permissions import IsAuthenticated, AllowAny, IsAuthenticatedOrReadOnly
+from rest_framework import viewsets
 from rest_framework.response import Response
 
 from .models import Post, Contact
@@ -19,17 +21,15 @@ class MultipleFieldLookupMixin:
         self.check_object_permissions(self.request, obj)
         return obj
 
-class ContactListView(ListCreateAPIView):
-	queryset = Contact.objects.all()
-	serializer_class = ContactSerializers
 
-class ContactDetailView(MultipleFieldLookupMixin, RetrieveUpdateDestroyAPIView):
+class ContactViewset(viewsets.ModelViewSet):
     queryset = Contact.objects.all()
     serializer_class = ContactSerializers
-    lookup_fields = ('slug','pk')
-
+    lookup_field = 'slug'
+    permission_classes = [IsAuthenticated]
 
     def create(self, request, *args, **kwargs):
+        data = request.data
         try:
             new_contact = Contact.objects.create(
                 full_name = data['full_name'],
@@ -66,18 +66,14 @@ class ContactDetailView(MultipleFieldLookupMixin, RetrieveUpdateDestroyAPIView):
             return Response({'errors':"Ma'lumotlarni saqlashda xatolik sodir bo'ladi!!!"})
 
 
-
-class PostListView(ListCreateAPIView):
-	queryset = Post.objects.all()
-	serializer_class = PostSerializers
-
-class PostDetailView(MultipleFieldLookupMixin, RetrieveUpdateDestroyAPIView):
+class PostViewset(viewsets.ModelViewSet):
     queryset = Post.objects.all()
     serializer_class = PostSerializers
-    lookup_fields = ('slug','pk')
-
+    lookup_field = 'slug'
+    permission_classes = [IsAuthenticated]
 
     def create(self, request, *args, **kwargs):
+        data = request.data
         try:
             new_post = Post.objects.create(
                 title = data['title'],

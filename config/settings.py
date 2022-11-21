@@ -52,6 +52,7 @@ INSTALLED_APPS = [
     # local app
     'mainapp',
     'mytest',
+    'api'
 ]
 
 SITE_ID = 1

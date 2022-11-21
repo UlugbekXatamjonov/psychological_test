@@ -12,7 +12,7 @@ STATUS = (
 
 class Contact(models.Model):
     full_name = models.CharField(max_length=200, verbose_name="Ism sharif")
-    slug = AutoSlugField(populate_from='full_name')
+    slug = AutoSlugField(populate_from='full_name', unique=True)
     age = models.PositiveIntegerField(verbose_name="Yosh")
     body = models.TextField(verbose_name="Matn")
     read = models.BooleanField(default=False, verbose_name="O'qildi")
@@ -26,7 +26,7 @@ class Contact(models.Model):
     
 class Post(models.Model):
     title = models.CharField(max_length=250, verbose_name="Sarlavha")
-    slug = AutoSlugField(populate_from='title')
+    slug = AutoSlugField(populate_from='title', unique=True,)
     body = models.TextField(verbose_name="Matn")
     photo = models.ImageField(upload_to='photos/', verbose_name="Rasm")
     video = models.FileField(upload_to='videos/', verbose_name="Video")
