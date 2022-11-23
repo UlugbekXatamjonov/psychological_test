@@ -10,23 +10,12 @@ from .serializers import PostSerializers, ContactSerializers
 
 # Create your views here.
 
-class MultipleFieldLookupMixin:
-    def get_object(self):
-        queryset = self.get_queryset()           
-        filter = {}
-        for slug in self.lookup_fields:
-            if self.kwargs[slug]: 
-                filter[slug] = self.kwargs[slug]
-        obj = get_object_or_404(queryset, **filter)
-        self.check_object_permissions(self.request, obj)
-        return obj
-
 
 class ContactViewset(viewsets.ModelViewSet):
     queryset = Contact.objects.all()
     serializer_class = ContactSerializers
     lookup_field = 'slug'
-    permission_classes = [IsAuthenticated]
+    permission_classes = [AllowAny]
 
     def create(self, request, *args, **kwargs):
         data = request.data
