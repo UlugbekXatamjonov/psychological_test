@@ -6,14 +6,14 @@ from rest_framework import viewsets
 from rest_framework.response import Response
 
 from .models import Post, Contact
-from .serializers import PostSerializers, ContactSerializers
+from .serializers import PostSerializer, ContactSerializer
 
 # Create your views here.
 
 
 class ContactViewset(viewsets.ModelViewSet):
     queryset = Contact.objects.all()
-    serializer_class = ContactSerializers
+    serializer_class = ContactSerializer
     lookup_field = 'slug'
     permission_classes = [AllowAny]
 
@@ -24,19 +24,26 @@ class ContactViewset(viewsets.ModelViewSet):
                 full_name = data['full_name'],
                 body = data['body'],
                 age = data['age'],
-                read = data['read'],
+                # read = data['read'],
             )
             new_contact.save()
-            serializer = ContactSerializers(new_contact)
+            serializer = ContactSerializer(new_contact)
             return Response(serializer.data)
         except Exception as e:
             return Response({'errors':"Ma'lumot to'liq emas!!!"})
 
     def destroy(self, request, *args, **kvargs):
         contact = self.get_object()
-        contact.status = 'deactive'
-        contact.save()
+        contact.status = 'delete'
+        contact.delete()
         return Response({"message":"Ma'lumot muvaffaqiyatli o'chirildi."})
+
+
+    def delete(self, request, *args, **kwargs):
+        contact = self.get_object()
+        if contact.status == 'delete':
+            contact.delete()
+        
 
     def update(self, request, *args, **kwargs):
         contact = self.get_object()
@@ -49,7 +56,7 @@ class ContactViewset(viewsets.ModelViewSet):
             contact.read = data['read'] if 'read' in data else contact.read
 
             contact.save()
-            serializer = ContactSerializers(contact)
+            serializer = ContactSerializer(contact)
             return Response(serializer.data)
         except Exception as e:
             return Response({'errors':"Ma'lumotlarni saqlashda xatolik sodir bo'ladi!!!"})
@@ -57,7 +64,7 @@ class ContactViewset(viewsets.ModelViewSet):
 
 class PostViewset(viewsets.ModelViewSet):
     queryset = Post.objects.all()
-    serializer_class = PostSerializers
+    serializer_class = PostSerializer
     lookup_field = 'slug'
     permission_classes = [IsAuthenticated]
 
@@ -69,19 +76,24 @@ class PostViewset(viewsets.ModelViewSet):
                 body = data['body'],
                 photo = data['photo'],
                 video = data['video'],
-                status = data['status'],
             )
             new_post.save()
-            serializer = PostSerializers(new_post)
+            serializer = PostSerializer(new_post)
             return Response(serializer.data)
         except Exception as e:
             return Response({'errors':"Ma'lumot to'liq emas!!!"})
 
     def destroy(self, request, *args, **kvargs):
         post = self.get_object()
-        post.status = 'deactive'
-        post.save()
+        post.status = 'delete'
+        post.delete()
         return Response({"message":"Ma'lumot muvaffaqiyatli o'chirildi."})
+
+    def delete(self, request, *args, **kwargs):
+        contact = self.get_object()
+        if contact.status == 'delete':
+            contact.delete()
+        return Response({"message":"Ma'lumot muvaffaqiyatli yo'q qilindi."})            
 
     def update(self, request, *args, **kwargs):
         post = self.get_object()
@@ -94,7 +106,7 @@ class PostViewset(viewsets.ModelViewSet):
             post.video = data['video'] if 'video' in data else post.video
             post.status = data['status'] if 'status' in data else post.status
             post.save()
-            serializer = PostSerializers(post)
+            serializer = PostSerializer(post)
             return Response(serializer.data)
         except Exception as e:
             return Response({'errors':"Ma'lumotlarni saqlashda xatolik sodir bo'ladi!!!"})

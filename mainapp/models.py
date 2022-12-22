@@ -7,7 +7,8 @@ from autoslug import AutoSlugField
 
 STATUS = (
     ('active','Active'),
-    ('deactive','Deactive')
+    ('deactive','Deactive'),
+    ('delete','Delete')
 )
 
 class Contact(models.Model):
@@ -24,12 +25,14 @@ class Contact(models.Model):
     def __str__(self):
         return self.full_name
     
+    
+    
 class Post(models.Model):
     title = models.CharField(max_length=250, verbose_name="Sarlavha")
     slug = AutoSlugField(populate_from='title', unique=True,)
     body = models.TextField(verbose_name="Matn")
-    photo = models.ImageField(upload_to='photos/', verbose_name="Rasm")
-    video = models.FileField(upload_to='videos/', verbose_name="Video")
+    photo = models.ImageField(upload_to='photos/', verbose_name="Rasm", blank=True, null=True)
+    video = models.FileField(upload_to='videos/', verbose_name="Video", blank=True, null=True)
     status = models.CharField(max_length=25, choices=STATUS, default='active', verbose_name="Holati")
     created_at = models.DateTimeField(auto_now=True)
 

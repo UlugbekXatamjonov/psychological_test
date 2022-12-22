@@ -2,7 +2,6 @@ from django.db import models
 
 from autoslug import AutoSlugField
 
-
 # Create your models here.
 
 STATUS = (
@@ -15,7 +14,6 @@ GENDER = (
 	('man','Erkak'),
 	('woman','Ayol'),
 )
-
 
 DIAGNOSIS = (
 	('bad','Sizning holatingiz yomon'),
@@ -31,7 +29,7 @@ class Category(models.Model):
 	# <<<---------- o'zini o'ziga ForeginKey orqali bog'lash ----------------->>> 
 	body = models.TextField(verbose_name="Kategoriya haqida", blank=True, null=True)
 	category_form = models.BooleanField(default=False, verbose_name="Kategoriyada formula bor/yo'q", blank=True, null=True)
-	ball35 = models.PositiveIntegerField(verbose_name="Formulaga qo'shiladigan ball", blank=True, null=True)
+	ball35 = models.PositiveIntegerField(verbose_name="Formulaga qo'shiladigan ball", default=0,  blank=True, null=True)
 	
 	status = models.CharField(max_length=50, choices=STATUS, default='active', verbose_name="Holati")
 	
@@ -85,8 +83,8 @@ class Form(models.Model):
 
 
 class Form_number(models.Model):
-	category = models.ForeignKey(Category, on_delete=models.CASCADE, verbose_name="Kategoriya nomi")
-	form = models.ForeignKey(Form, on_delete=models.CASCADE, verbose_name="Formula")
+	category = models.ForeignKey(Category, on_delete=models.CASCADE,related_name="form_number_category", verbose_name="Kategoriya nomi")
+	form = models.ForeignKey(Form, on_delete=models.CASCADE, related_name="form_number_form", verbose_name="Formula")
 	number = models.PositiveIntegerField(verbose_name="Formula soni")
 
 	status = models.CharField(max_length=50, choices=STATUS, default='active', verbose_name="Holati")
@@ -96,20 +94,19 @@ class Form_number(models.Model):
 	class Meta:
 		ordering = ("-created_at",)
 
-	def __str__(self):	
-		return str(self.form)
-
+	# def __str__(self):	
+	# 	return str(self.form)
 
 
 class Test(models.Model):
 	category = models.ForeignKey(Category, on_delete=models.CASCADE, related_name="test_category", verbose_name="Kategoriya")
 	form = models.ForeignKey(Form, on_delete=models.CASCADE, related_name="test_form", blank=True, null=True ,verbose_name="Form")
 	body = models.TextField(verbose_name="Test matni")
-	# slug = AutoSlugField(populate_from="body")
+	slug = AutoSlugField(populate_from="category", unique=True)
 
 	status = models.CharField(max_length=50, choices=STATUS, default='active', verbose_name="Holati")
 
-	created_at  =models.DateTimeField(auto_now=True)
+	created_at  =models.DateTimeField(auto_now_add=True)
 
 	class Meta:
 		ordering = ("-created_at",)
@@ -119,10 +116,9 @@ class Test(models.Model):
 
 
 class Test_answer(models.Model):
-	test_id = models.ForeignKey(Test, on_delete=models.CASCADE, related_name="test_id", verbose_name="Test")
-	answer = models.TextField(verbose_name="Test varianti")
+	test_id = models.ForeignKey(Test, on_delete=models.CASCADE, related_name="answer", verbose_name="Test")	
+	answer_text = models.TextField(verbose_name="Test varianti")
 	ball = models.PositiveIntegerField(verbose_name="Variant ostidagi ball")
-
 	status = models.CharField(max_length=50, choices=STATUS, default='active', verbose_name="Holati")
 
 	created_at  =models.DateTimeField(auto_now=True)
@@ -131,15 +127,14 @@ class Test_answer(models.Model):
 		ordering = ("-created_at",)
 
 	def __str__(self):
-		return self.answer
-
+		return self.answer_text
 
 
 class Test_result(models.Model):
 	info_id = models.ForeignKey(Info, on_delete=models.CASCADE, related_name="result_info", verbose_name="Info")
 	test_id = models.ForeignKey(Test, on_delete=models.CASCADE, related_name="result_test", verbose_name="Test")	
 	answer_id = models.ForeignKey(Test_answer, on_delete=models.CASCADE, related_name="result_answer", verbose_name="Javob")
-	diagnosis = models.CharField(max_length=50, choices=DIAGNOSIS, default='normal' ,verbose_name="Tashxis")
+	diagnosis = models.CharField(max_length=50, choices=DIAGNOSIS, default='normal', verbose_name="Tashxis")
 
 	status = models.CharField(max_length=50, choices=STATUS, default='active', verbose_name="Holati")
 

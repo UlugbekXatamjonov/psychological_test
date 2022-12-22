@@ -47,6 +47,7 @@ urlpatterns = [
     
 
     path('admin-api/', include('mainapp.urls')),
+    path('admin-api/', include('mytest.urls')),
     path('api/', include('api.urls'))
 ]
 

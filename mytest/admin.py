@@ -23,20 +23,27 @@ class FormAdmin(admin.ModelAdmin):
 
 @admin.register(Form_number)
 class Form_numberAdmin(admin.ModelAdmin):
-	list_display = ('category','form','number','status','created_at')
-	list_filter = ('category','form','status','created_at')
+	list_display = ('category','number','status','created_at')
+	list_filter = ('category','status','created_at')
+
+# Test_answer uchun Inline panel
+class TestAnswerInlineMode(admin.TabularInline):
+    model = Test_answer
+    fields = ['test_id','answer_text','ball','status',]
 
 @admin.register(Test)
 class TestAdmin(admin.ModelAdmin):
 	list_display = ('category','id','form','status','created_at')
 	list_filter = ('category','form','status','created_at')
 	search_field = ('body',)
+	inlines = [TestAnswerInlineMode,]
+
 
 @admin.register(Test_answer)
 class Test_answerAdmin(admin.ModelAdmin):
-	list_display = ('answer','test_id','ball','status','created_at')
+	list_display = ('answer_text','test_id','ball','status','created_at')
 	list_filter = ('ball','status','created_at')
-	search_field = ('answer',)
+	search_field = ('answer_text',)
 
 @admin.register(Test_result)
 class Test_resultAdmin(admin.ModelAdmin):
