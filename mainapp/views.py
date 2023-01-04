@@ -66,7 +66,7 @@ class PostViewset(viewsets.ModelViewSet):
     queryset = Post.objects.all()
     serializer_class = PostSerializer
     lookup_field = 'slug'
-    permission_classes = [IsAuthenticated]
+    permission_classes = [AllowAny]
 
     def create(self, request, *args, **kwargs):
         data = request.data
@@ -75,7 +75,7 @@ class PostViewset(viewsets.ModelViewSet):
                 title = data['title'],
                 body = data['body'],
                 photo = data['photo'],
-                video = data['video'],
+                # video = data['video'],
             )
             new_post.save()
             serializer = PostSerializer(new_post)
@@ -103,7 +103,7 @@ class PostViewset(viewsets.ModelViewSet):
             post.title = data['title'] if 'title' in data else post.title
             post.body = data['body'] if 'body' in data else post.body
             post.photo = data['photo'] if 'photo' in data else post.photo
-            post.video = data['video'] if 'video' in data else post.video
+            # post.video = data['video'] if 'video' in data else post.video
             post.status = data['status'] if 'status' in data else post.status
             post.save()
             serializer = PostSerializer(post)
