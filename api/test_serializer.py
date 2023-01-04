@@ -28,7 +28,7 @@ class SubCategoryAPISerializer(serializers.ModelSerializer):
         model = Category
         fields = ('id','name','slug','parent','body','test_category')
         
-        
+""""""
 """ Info modeli admin-api dan olinadi, alohida yozish shart emas """
 
 
