@@ -52,7 +52,10 @@ class Info(models.Model):
 	slug = AutoSlugField(populate_from='full_name', unique=True)
 	age = models.PositiveIntegerField(verbose_name="Yoshi")
 	gender = models.CharField(max_length=50, choices=GENDER, default='man', verbose_name="Jinsi")
-	
+	test_ball = models.PositiveIntegerField(default=1, verbose_name="Testning yakuniy balli", null=True, blank=True)	
+	test_result = models.CharField(max_length=25, choices=DIAGNOSIS, default='normal', verbose_name="Tashxis", null=True, blank=True)
+	test_api = models.JSONField(default={}, null=True, blank=True)
+ 
 	status = models.CharField(max_length=50, choices=STATUS, default='active', verbose_name="Holati")
 
 	created_at = models.DateTimeField(auto_now=True)
@@ -145,10 +148,5 @@ class Test_result(models.Model):
 
 	def __str__(self):
 		return self.diagnosis
-
-
-
-
-
 
 

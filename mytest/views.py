@@ -9,6 +9,8 @@ from .models import Form_number as NumberModel
 from .serializers import CategorySerializer, InfoSerializer, FormSerializer, Form_numberSerializer, TestSerializer, \
     Test_answerSerializer, Test_resultSerializer
 
+import json
+
 # Create your views here.
 
 class CategoryViewSet(viewsets.ModelViewSet):
@@ -118,6 +120,11 @@ class InfoViewSet(viewsets.ModelViewSet):
                 full_name = data['full_name'],
                 gender = data['gender'],
                 age = data['age'],
+                test_ball = data['test_ball'],
+                test_result = data['test_result'],
+                test_api = json.loads(data['test_api']) 
+                # str ni dict qilish / malumot string bo'lib kelyapgandi, shuning uchun shu <-- usul yordamida
+                # uni cidt-dictionary qilish kerak bo'ldi
             )
             new_info.save()
             serializer = InfoSerializer(new_info)
@@ -151,10 +158,16 @@ class InfoViewSet(viewsets.ModelViewSet):
                 contact.full_name = data['full_name'] if 'full_name' in data else contact.full_name
                 contact.age = data['age'] if 'age' in data else contact.age
                 contact.gender = data['gender'] if 'gender' in data else contact.gender
+                contact.test_ball = data['test_ball'] if 'test_ball' in data else contact.test_ball
+                contact.test_result = data['test_result'] if 'test_result' in data else contact.test_result
+                contact.test_api = data['test_api'] if 'test_api' in data else contact.test_api
             else:
                 contact.full_name = data['full_name'] if 'full_name' in data else contact.full_name
                 contact.age = data['age'] if 'age' in data else contact.age
                 contact.gender = data['gender'] if 'gender' in data else contact.gender
+                contact.test_ball = data['test_ball'] if 'test_ball' in data else contact.test_ball
+                contact.test_result = data['test_result'] if 'test_result' in data else contact.test_result
+                contact.test_api = data['test_api'] if 'test_api' in data else contact.test_api
             contact.save()
             serializer = InfoSerializer(contact)
             return Response(serializer.data)
