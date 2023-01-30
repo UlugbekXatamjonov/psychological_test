@@ -4,12 +4,12 @@ from rest_framework.permissions import IsAuthenticated, AllowAny, IsAuthenticate
 from rest_framework import viewsets
 from rest_framework.response import Response
 
-from .models import Category, Info, Form, Form_number, Test, Test_answer, Test_result
-from .models import Form_number as NumberModel
-from .serializers import CategorySerializer, InfoSerializer, FormSerializer, Form_numberSerializer, TestSerializer, \
-    Test_answerSerializer, Test_resultSerializer
+from .models import Category, Info, Form, Test, Test_answer
+from .serializers import CategorySerializer, InfoSerializer, FormSerializer, TestSerializer, \
+    Test_answerSerializer
 
 import json
+from pprint import pprint
 
 # Create your views here.
 
@@ -105,9 +105,176 @@ class InfoViewSet(viewsets.ModelViewSet):
 
     def create(self, request, *args, **kwargs):
         data = request.data
-        # category = Category.objects.get(id=data['category'])
+        api = json.loads(request.data['test_api'])
         
-        # category =  False        
+        
+        """ 
+        ##########################################################################################################
+        ##########################################################################################################
+                        ✅ Belgilangan javoblar asosida ummumiy balni hisoblash va tashxis qo'yish ✅
+        ##########################################################################################################
+        ##########################################################################################################
+        """
+        
+        """ Kelayotgan request dan belgilangan category, test va tesning  javoblarini o'zgaruvchilarga yuklab olamiz """
+        answer_category = api.get('category') # belgilangan category idsi
+        answer_tests = api.get('tests') # belgilangan test va javob idlari
+        
+        answer_tests_id = [] # belgilangan test idlari
+        for test in answer_tests:
+            answer_tests_id.append(test['test_id'])
+            
+        answer_answer_id = [] # belgilangan javoblar idlari
+        for awr in answer_tests:
+            answer_answer_id.append(awr['answer_id'])
+            
+
+        """ Requstdan kelgan test va kategoriya id lari asosida o'zimizda bor test va category larni yig'ib olamiz.
+            Testlar bir yo'la 3 ta list qilib olingan; ummumiy(total_tests), E1 turidagi testlar(e1_tests), E2 turidagi testlar(e2_tests) 
+        """
+        category = Category.objects.filter(id=answer_category).values() # belgilangan category obyekti / bazadagi
+
+        total_tests = [] # belgilangan test obyektlari(ro'yhati) / bazadagi
+        e1_tests = [] # belgilangan E1 turidagi test obyektlari / bazadagi
+        e2_tests = [] # belgilangan E2 turidagi test obyektlari / bazadagi
+        
+                    
+        for testid in answer_tests_id:
+            test = Test.objects.filter(id=testid).values()
+            test_e1 = Test.objects.filter(form_id=1, id=testid).values()
+            test_e2 = Test.objects.filter(form_id=2, id=testid).values()
+        
+            if bool(test):
+                total_tests.append(test)
+        
+            if bool(test_e1):
+                e1_tests.append(test_e1)
+        
+            if bool(test_e2):
+                e2_tests.append(test_e2)
+            
+            
+        """ Javoblarni ham ajratib olamiz """
+        total_answers = [] # belgilangan answer obyektlari ro'yhati
+        for answerid in answer_answer_id:
+            total_answers.append(Test_answer.objects.filter(id=answerid).values())
+        
+    
+        """ E1 turidagi teslarni idsi javoblardagi 'test_id' bilan birxil bo'la; yani javob E1 turidagi
+            testga tegishli bo'lsa o'sha javobni  'ball' lini 'e1' degan o'zgaruvchiga yig'amiz.
+            Va natijada hamma E1 turidagi testlarning javoblari ostidagi ballar yig'indisini topamiz. 
+            Huddi shu ish E2 turidagi testlar ushun ham takrorlangan. 
+        """
+        
+        
+        
+        print("---------------------")
+        # pprint(total_answers[0]['ball'])
+        
+        print("---------------------")
+
+        """ Barcha testlar uchun """
+        t_ball = 0 # hamma javoblardagi ballar yi'gindisi   
+        for answer in total_answers:
+            t_ball += answer[0]['ball']
+        # print(f"Total BALLS ----> {t_ball}")
+        
+        
+        """ E1 turidagi testlar uchun """
+        e1_ball = 0 # E1 turidagi testlarning  javobidagi ballar yi'gindisi
+        for test in e1_tests:    
+            for answer in total_answers:
+                if answer[0]['test_id_id'] == test[0]['id']:
+                    e1_ball += answer[0]['ball']
+        # print(f"Total E1 BALL ----> {e1_ball}")
+        
+                  
+        """ E2 turidagi tstlar uchun """         
+        e2_ball = 0  # E2 turidagi testlarning  javobidagi ballar yi'gindisi
+        for test in e2_tests:    
+            for answer in total_answers:
+                if answer[0]['test_id_id'] == test[0]['id']: 
+                    e2_ball += answer[0]['ball']
+        # print(f"Total E2 BALL ----> {e2_ball}")
+                
+                
+            
+        """ ---------------------   Ballni hisoblash ---------------------- """
+    
+        total_ball = 0 # testning ummumiy balli
+        tashxis = " Tashxis hali qo'yilmagan "
+        
+        ishora_1 = 0
+        ishora_2 = 0
+        
+        
+        if category[0]['category_form']:# ✅✅✅ Sinovdan o'tdi
+            ishora_1 = 1
+            if category[0]['ball35']: # ✅✅✅ Sinovdan o'tdi
+                total_ball += e1_ball - e2_ball + category[0]['ball35']# E1 - E2 + 35 ball
+                # print(f"E1 {e1_ball} - E2 {e2_ball} + Ball35 + {category[0]['ball35']}")
+                ishora_2 = 1
+                """ Tashxis """
+                if total_ball <= 30:
+                    tashxis = "Yengil daraja"
+                elif total_ball <= 45:
+                    tashxis = "O'rta daraja"
+                elif total_ball >= 46:
+                    tashxis = "Kuchli daraja"
+                else:
+                    tashxis = "Tashxis qo'yishda xatolik !!!"
+                # print(tashxis)
+                
+            else: # ✅✅✅ Sinovdan o'tdi
+                total_ball += e1_ball + e2_ball # E1 + E2
+                # print(f"E1 {e1_ball} + E2 {e2_ball}")
+                
+                """ Tashxis """
+                if total_ball <= 40:
+                    tashxis = "Yo'q "
+                elif total_ball <= 48:
+                    tashxis = "Yengil daraja "
+                elif total_ball <= 55:
+                    tashxis = "O'rta daraja "
+                elif total_ball <= 82:
+                    tashxis = "Og'ir daraja"
+                else:
+                    tashxis = "Tashxis qo'yishda xatolik !!!"
+                # print(tashxis)
+                    
+        else: # ✅✅✅ Sinovdan o'tdi
+            total_ball += t_ball # Javobdagi barcha ballar yig'indisi
+            # print(f"t_ball = {t_ball}")
+            
+            """ Tashxis """
+            if total_ball <= 7:
+                tashxis = "Norma"
+            elif total_ball <= 10:
+                tashxis = "Subklinik xavotir / Dipressia"
+            elif total_ball >= 11:
+                tashxis = "Kuchlik xavotir / Dipressia"
+            else:
+                tashxis = "Tashxis qo'yishda xatolik !!!"
+            # print(tashxis)
+
+        # print(f"Testning ummumiy balli --> {total_ball}")
+        
+        """ 
+        ##########################################################################################################
+        ##########################################################################################################
+                        ✅ Belgilangan javoblar asosida ummumiy balni hisoblash va tashxis qo'yish ✅
+        ##########################################################################################################
+        ##########################################################################################################
+        """
+        
+        
+        
+        """ 👇👇👇 Yangi obyekt yaratish 👇👇👇 """
+        
+        testes_api = {  # API Frontdan keladi, uni qayta ishlaymiz, keyin u kelgan maydonga shuni qo'yib ketamiz
+            "api": "Bu yerda API bo'ladi :)"
+        } 
+    
         if 'category' in data:
             try:
                 category = Category.objects.get(pk=data['category'])
@@ -120,15 +287,49 @@ class InfoViewSet(viewsets.ModelViewSet):
                 full_name = data['full_name'],
                 gender = data['gender'],
                 age = data['age'],
-                test_ball = data['test_ball'],
-                test_result = data['test_result'],
-                test_api = json.loads(data['test_api']) 
-                # str ni dict qilish / malumot string bo'lib kelyapgandi, shuning uchun shu <-- usul yordamida
-                # uni cidt-dictionary qilish kerak bo'ldi
+                test_ball = total_ball, # testning umumiy bali
+                test_result = tashxis, # testning tashxisi
+                test_api = testes_api # frontdan kelgan API o'rniga shunchaki 
             )
             new_info.save()
             serializer = InfoSerializer(new_info)
-            return Response(serializer.data)
+            # return Response(serializer.data) # javob ketishi kk shu yerda
+            
+            if ishora_1:
+                if ishora_2: # E1 - E2 + 35 ball
+                    return Response({'message':f"Hurmatli {data['full_name']} ! Siz testdan toplagan ball: {total_ball} ball",
+                                    'tashxis':f"Sizga qo'yilgan tashxis: {tashxis}",
+                                    "tashxis_info":{
+                                        '1':"0 dan 30 ballgacha  yengil daraja ",
+                                        "2":"31 dan 45 ballgacha o'rta daraja",
+                                        "3":"46 dan yuqori ball  kuchli daraja"    
+                                        },
+                                    "doctor":"Shifokor, Tibbiy psiholog, psihoterapeft - Dedaxanov Dilshod Toxirovich",
+                                    "tel":"Tel: +998902750030"
+                                    })
+                else: # E1 + E2
+                    return Response({'message':f"Hurmatli {data['full_name']} ! Siz testdan toplagan ball: {total_ball} ball",
+                                    'tashxis':f"Sizga qo'yilgan tashxis: {tashxis}",
+                                    "tashxis_info":{
+                                        '1':"0 dan 40 ballgacha  yo'q ",
+                                        "2":"41 dan 48 ballgacha yengil daraja",
+                                        "3":"49 dan 55 ballgacha o'rta daraja",
+                                        "4":"55 dan yuqori ball  og'ir daraja"    
+                                        },
+                                    "doctor":"Shifokor, Tibbiy psiholog, psihoterapeft - Dedaxanov Dilshod Toxirovich",
+                                    "tel":"Tel: +998902750030"
+                                    })    
+            else: # Javobdagi barcha ballar yig'indisi   
+                return Response({'message':f"Hurmatli {data['full_name']} ! Siz testdan toplagan ball: {total_ball} ball",
+                                    'tashxis':f"Sizga qo'yilgan tashxis: {tashxis}",
+                                    "tashxis_info":{
+                                        '1':"0 dan 7 ballgacha  Norma ",
+                                        "2":"8 dan 10 ballgacha Subklinik xavotir / Dipressia",
+                                        "3":"11 dan yuqori ball Kuchlik xavotir / Dipressia"    
+                                        },
+                                    "doctor":"Shifokor, Tibbiy psiholog, psihoterapeft - Dedaxanov Dilshod Toxirovich",
+                                    "tel":"Tel: +998902750030"
+                                    })
         except Exception as e:
             return Response({'errors':"Ma'lumot to'liq emas!!!"})
 
@@ -158,15 +359,15 @@ class InfoViewSet(viewsets.ModelViewSet):
                 contact.full_name = data['full_name'] if 'full_name' in data else contact.full_name
                 contact.age = data['age'] if 'age' in data else contact.age
                 contact.gender = data['gender'] if 'gender' in data else contact.gender
-                contact.test_ball = data['test_ball'] if 'test_ball' in data else contact.test_ball
-                contact.test_result = data['test_result'] if 'test_result' in data else contact.test_result
+                contact.test_ball = total_ball # testning balli
+                contact.test_result = tashxis # testning tashxisi
                 contact.test_api = data['test_api'] if 'test_api' in data else contact.test_api
             else:
                 contact.full_name = data['full_name'] if 'full_name' in data else contact.full_name
                 contact.age = data['age'] if 'age' in data else contact.age
                 contact.gender = data['gender'] if 'gender' in data else contact.gender
-                contact.test_ball = data['test_ball'] if 'test_ball' in data else contact.test_ball
-                contact.test_result = data['test_result'] if 'test_result' in data else contact.test_result
+                contact.test_ball = total_ball # testning balli
+                contact.test_result = tashxis # testning tashxisi
                 contact.test_api = data['test_api'] if 'test_api' in data else contact.test_api
             contact.save()
             serializer = InfoSerializer(contact)
@@ -174,72 +375,7 @@ class InfoViewSet(viewsets.ModelViewSet):
         except Exception as e:
             return Response({'errors':"Ma'lumotlarni saqlashda xatolik sodir bo'ladi!!!"})
 
-    def total_score(self, request, *args, **kwargs):
-        # def tests_answer(selected_answers):
-        """ Kelayotgan resuest dan belgilangan category va test hamda uning variantlarini yuklab olamiz """
-        answer_category = request.get('category') # belgilangan category idsi
-        answer_tests = request.get['tests'] # belgilangan test va javob idlari
-        
-        answer_tests_id = [] # belgilangan test idlari
-        for test in answer_tests:
-            answer_tests_id.append(test['test_id'])
-            
-        answer_answer_id = [] # belgilangan javoblar idlari
-        for awr in answer_tests:
-            answer_answer_id.append(awr['answer_id'])
-            
-        """ requstdan kelgan test va kategoriya idlari asosida o'zimizda bor test va category larni yig'ib olamiz """
-        category = Category.objects.filter(id=answer_category) # belgilangan category obyekti
-        
-        total_tests = [] # belgilangan test obyekti(ro'yhat)
-        for testid in answer_tests_id:
-            total_tests.append(Test.objects.filter(id=testid))
-        
-        """ testlarni formulasi bo'yicha ajratib olamiz; E1 va E2 """    
-        test_e1 = [] # belgilangan E1 test obyekti(ro'yhat)
-        for testid in answer_tests_id:
-            test_e1.append(Test.objects.filter(id=testid, form=1))
-            
-        test_e2 = [] # belgilangan E2 test obyekti(ro'yhat)
-        for testid in answer_tests_id:
-            test_e2.append(Test.objects.filter(id=testid, form=2)) 
-        
-        """ Javoblarni ham ajratib olamiz """
-        answer = [] # belgilangan answer obyekti(ro'yhat)
-        for answerid in answer_answer_id:
-            answer.append(Test_answer.objects.filter(id=answerid))
-        
-        """ E1 turidagi teslarni idsi javoblardagi 'test_id' bilan birxil bo'la; yani javob E1 turidagi
-            testga tegishli bo'lsa o'sha javobni  'ball'lini 'e1' degan o'zgaruvchiga yig'amiz.
-            Va natijada hamma E1 turidagi testlarning javoblari ostidagi ballar yig'indisini topamiz. 
-            Huddi shu ish E2 turidagi testlar ushun ham takrorlangan. """
-        
-        """ E1 turidagi tstlar uchun """
-        e1 = 0
-        for test in test_e1:
-            for asw in answer:
-                if asw.test_id == test.id:
-                    e1 += answer.ball
-        """ E2 turidagi tstlar uchun """         
-        e2 = 0
-        for test in test_e2:
-            for asw in answer:
-                if asw.test_id == test.id:
-                    e2 += answer.ball
-                
-        """  ---------------------   Ballni hisoblash ---------------------- """
-        total_ball = 0 # ummumiy ball
-        if category.ball35 > 0 and category == answer_category:
-            """ E1-E2+35 """
-            total_ball = e1 - e2 + category.ball35
-        elif category.ball35 == 0 and category == answer_category:
-            total_ball = e1 + e2
-        else:
-            print("Ballni hisoblashda xatolik sodir bo'ldi!!!")
-
-        return(total_ball)
-
-
+    
 
 class FormViewSet(viewsets.ModelViewSet):
     queryset = Form.objects.all()
@@ -276,81 +412,6 @@ class FormViewSet(viewsets.ModelViewSet):
         except Exception as e:
             return Response({'errors':"Ma'lumotlarni saqlashda xatolik sodir bo'ladi!!!"})
 
-
-class Form_numberViewSet(viewsets.ModelViewSet):
-    queryset = Form_number.objects.all()
-    serializer_class = Form_numberSerializer    
-    permission_classes = [AllowAny]
-    
-    def create(self, request, *args, **kwargs):
-        form_number_data = request.data
-
-        category =  False        
-        if 'category' in form_number_data:
-            try:
-                category = Category.objects.get(pk=form_number_data['category'])
-            except Exception as e:
-                return Response({"category":"Bunday Categoriya mavjud emas!!!"})
-            
-        form =  False        
-        if 'form' in form_number_data:
-            try:
-                form = Form.objects.get(pk=form_number_data['form'])
-            except Exception as e:
-                return Response({"form":"Bunday test mavjud emas!!!"})
-        
-          
-        try:
-            new_form_number = Form_number.objects.create(
-                category = category,
-                form = form,
-                number = form_number_data['number'],
-                )
-
-            new_form_number.save()
-            serializer = Form_numberSerializer(new_form_number)
-            return Response(serializer.data)
-        except Exception as e:
-    	    return Response({'errors':"Ma'lumot to'liq emas!!!"})
-
-    def destroy(self, request, *args, **kvargs):
-        form_number = self.get_object()
-        form_number.status = 'delete'
-        form_number.delete()
-        return Response({"message":"Ma'lumot muvaffaqiyatli o'chirildi."})
-    
-    def update(self, request, *args, **kwargs):
-        form_number = self.get_object()
-        data = request.data
-        # <--- Category uchun --->
-        try:
-        	try:
-           		category = Category.objects.filter(pk=data['category']).first()
-        	except:
-            		category = None
-        except Exception as e:
-            return Response({"error":"Bunday  Kata kategoriya mavjud emas!!!"})
-        
-        # <--- Form_number uchun   --->
-        try:
-        	try:
-           		form = Form.objects.filter(pk=data['form']).first()
-        	except:
-            		form = None
-        except Exception as e:
-            return Response({"error":"Bunday  Forma mavjud emas!!!"})
-        # <--- Foreginkey uchun --->
-    
-        try:
-            form_number.name = data['name'] if 'name' in data else form_number.name
-            form_number.category = category
-            form_number.form = form
-            
-            form_number.save()
-            serializer = Form_numberSerializer(form_number)
-            return Response(serializer.data)
-        except Exception as e:
-            return Response({'errors':"Ma'lumotlarni saqlashda xatolik sodir bo'ladi!!!"})
 
 
 class TestViewSet(viewsets.ModelViewSet):   
@@ -428,7 +489,7 @@ class TestViewSet(viewsets.ModelViewSet):
         
         try:
             if category:
-                test_data.form = form
+                test_data.form = form if form else test_data.form
                 test_data.category = category
                 test_data.body = data['body'] if 'body' in data else test_data.body
             else:
@@ -505,97 +566,6 @@ class TestAnswerViewSet(viewsets.ModelViewSet):
             return Response({'errors':"Ma'lumotlarni saqlashda xatolik sodir bo'ladi!!!"})
 
 
-class TestResultViewSet(viewsets.ModelViewSet):
-    queryset = Test_result.objects.all()
-    serializer_class = Test_resultSerializer
-    permission_classes  =[AllowAny]
-        
-    def create(self, request, *args, **kwargs):
-        test_result_data = request.data
-
-        info_id =  False        
-        if 'info_id' in test_result_data:
-            try:
-                info_id = Info.objects.get(pk=test_result_data['info_id'])
-            except Exception as e:
-                return Response({"info_id":"Bunday info mavjud emas!!!"})
-            
-        test_id =  False        
-        if 'test_id' in test_result_data:
-            try:
-                test_id = Test.objects.get(pk=test_result_data['test_id'])
-            except Exception as e:
-                return Response({"test_id":"Bunday test mavjud emas!!!"})
-        
-        answer_id =  False        
-        if 'answer_id' in test_result_data:
-            try:
-                answer_id = Test_answer.objects.get(pk=test_result_data['answer_id'])
-            except Exception as e:
-                return Response({"answer_id":"Bunday javob mavjud emas!!!"})
-            
-          
-        try:
-            new_test_result = Test_result.objects.create(
-                info_id = info_id,
-                test_id = test_id,
-                answer_id = answer_id,
-                diagnosis = test_result_data['diagnosis'],
-                )
-
-            new_test_result.save()
-            serializer = Test_resultSerializer(new_test_result)
-            return Response(serializer.data)
-        except Exception as e:
-    	    return Response({'errors':"Ma'lumot to'liq emas!!!"})
-
-            
-    def destroy(self, request, *args, **kvargs):
-        test_result = self.get_object()
-        test_result.status = 'delete'
-        test_result.delete()   
-        return Response({"message":"Ma'lumot muvaffaqiyatli o'chirildi."})
-    
-   
-    def update(self, request, *args, **kwargs):
-        """Test result taxrirlanmasli sababli update() to'liq yozilmadi yozilmadi"""
-        test_result_data = self.get_object()
-        data = request.data
-        
-        try:
-        	try:
-           		info_id = Info.objects.filter(pk=data['info_id']).first()
-        	except:
-            	    info_id = None
-        except Exception as e:
-            return Response({"error":"Bunday  Info mavjud emas!!!"})
-    
-        try:
-        	try:
-           		test_id = Test.objects.filter(pk=data['test_id']).first()
-        	except:
-            	    test_id = None
-        except Exception as e:
-            return Response({"error":"Bunday  Test mavjud emas!!!"})
-        
-        try:
-        	try:
-           		answer_id = Test_answer.objects.filter(pk=data['answer_id']).first()
-        	except:
-            	    answer_id = None
-        except Exception as e:
-            return Response({"error":"Bunday  Ansver mavjud emas!!!"})
-        
-        try: 
-            test_result_data.info_id = info_id
-            test_result_data.test_id = test_id
-            test_result_data.answer_id = answer_id
-            test_result_data.diagnosis = data['diagnosis'] if 'diagnosis' in data else test_result_data.diagnosis
-            test_result_data.save()
-            serializer = Test_resultSerializer(test_result_data)
-            return Response(serializer.data)
-        except Exception as e:
-            return Response({'errors':"Ma'lumotlarni saqlashda xatolik sodir bo'ladi!!!"})
 
 
 

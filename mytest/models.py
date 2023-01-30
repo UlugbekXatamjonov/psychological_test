@@ -53,7 +53,7 @@ class Info(models.Model):
 	age = models.PositiveIntegerField(verbose_name="Yoshi")
 	gender = models.CharField(max_length=50, choices=GENDER, default='man', verbose_name="Jinsi")
 	test_ball = models.PositiveIntegerField(default=1, verbose_name="Testning yakuniy balli", null=True, blank=True)	
-	test_result = models.CharField(max_length=25, choices=DIAGNOSIS, default='normal', verbose_name="Tashxis", null=True, blank=True)
+	test_result = models.CharField(max_length=25, verbose_name="Tashxis", null=True, blank=True)
 	test_api = models.JSONField(default={}, null=True, blank=True)
  
 	status = models.CharField(max_length=50, choices=STATUS, default='active', verbose_name="Holati")
@@ -84,21 +84,6 @@ class Form(models.Model):
 	def __str__(self):
 		return self.name
 
-
-class Form_number(models.Model):
-	category = models.ForeignKey(Category, on_delete=models.CASCADE,related_name="form_number_category", verbose_name="Kategoriya nomi")
-	form = models.ForeignKey(Form, on_delete=models.CASCADE, related_name="form_number_form", verbose_name="Formula")
-	number = models.PositiveIntegerField(verbose_name="Formula soni")
-
-	status = models.CharField(max_length=50, choices=STATUS, default='active', verbose_name="Holati")
-
-	created_at = models.DateTimeField(auto_now=True)
-
-	class Meta:
-		ordering = ("-created_at",)
-
-	# def __str__(self):	
-	# 	return str(self.form)
 
 
 class Test(models.Model):
@@ -131,22 +116,5 @@ class Test_answer(models.Model):
 
 	def __str__(self):
 		return self.answer_text
-
-
-class Test_result(models.Model):
-	info_id = models.ForeignKey(Info, on_delete=models.CASCADE, related_name="result_info", verbose_name="Info")
-	test_id = models.ForeignKey(Test, on_delete=models.CASCADE, related_name="result_test", verbose_name="Test")	
-	answer_id = models.ForeignKey(Test_answer, on_delete=models.CASCADE, related_name="result_answer", verbose_name="Javob")
-	diagnosis = models.CharField(max_length=50, choices=DIAGNOSIS, default='normal', verbose_name="Tashxis")
-
-	status = models.CharField(max_length=50, choices=STATUS, default='active', verbose_name="Holati")
-
-	created_at  =models.DateTimeField(auto_now=True)
-
-	class Meta:
-		ordering = ("-created_at",)
-
-	def __str__(self):
-		return self.diagnosis
 
 

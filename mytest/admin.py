@@ -1,6 +1,6 @@
 from django.contrib import admin
 
-from .models import Category, Info, Form, Form_number, Test, Test_answer, Test_result
+from .models import Category, Info, Form, Test, Test_answer
 
 # Register your models here.
 
@@ -21,11 +21,6 @@ class FormAdmin(admin.ModelAdmin):
 	list_display = ('name','id','slug','status','created_at')
 	list_filter = ('status','created_at')
 
-@admin.register(Form_number)
-class Form_numberAdmin(admin.ModelAdmin):
-	list_display = ('category','number','status','created_at')
-	list_filter = ('category','status','created_at')
-
 # Test_answer uchun Inline panel
 class TestAnswerInlineMode(admin.TabularInline):
     model = Test_answer
@@ -45,11 +40,6 @@ class Test_answerAdmin(admin.ModelAdmin):
 	list_filter = ('ball','status','created_at')
 	search_field = ('answer_text',)
 
-@admin.register(Test_result)
-class Test_resultAdmin(admin.ModelAdmin):
-	list_display = ('info_id','diagnosis','status','created_at')
-	list_filter = ('status','created_at')
-	
 
 # @admin.register()
 # class Admin(admin.ModelAdmin):
