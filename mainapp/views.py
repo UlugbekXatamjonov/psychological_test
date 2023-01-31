@@ -103,7 +103,6 @@ class PostViewset(viewsets.ModelViewSet):
             post.title = data['title'] if 'title' in data else post.title
             post.body = data['body'] if 'body' in data else post.body
             post.photo = data['photo'] if 'photo' in data else post.photo
-            # post.video = data['video'] if 'video' in data else post.video
             post.status = data['status'] if 'status' in data else post.status
             post.save()
             serializer = PostSerializer(post)
