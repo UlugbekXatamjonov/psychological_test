@@ -5,8 +5,8 @@ from rest_framework.permissions import IsAuthenticated, AllowAny, IsAuthenticate
 from rest_framework import viewsets
 from rest_framework.response import Response
 
-from .models import Post, Contact
-from .serializers import PostSerializer, ContactSerializer
+from .models import Post, Contact, Personal_Info
+from .serializers import PostSerializer, ContactSerializer, Personal_InfoSerializer
 
 # Create your views here.
 
@@ -112,4 +112,42 @@ class PostViewset(viewsets.ModelViewSet):
 
 
 
+class Personal_InfoViewset(viewsets.ModelViewSet):
+    queryset = Personal_Info.objects.all()
+    serializer_class = Personal_InfoSerializer
+    # lookup_field = 'slug'
+    permission_classes = [AllowAny]
+
+    def create(self, request, *args, **kwargs):
+        data = request.data
+        try:
+            new_info = Personal_Info.objects.create(
+                body = data['body'],
+                photo = data['photo'],
+            )
+            new_info.save()
+            serializer = Personal_InfoSerializer(new_info)
+            return Response(serializer.data)
+        except Exception as e:
+            return Response({'errors':"Ma'lumot to'liq emas!!!"})
+
+    def destroy(self, request, *args, **kvargs): # DELETE yo'q bu modelda !!!
+        info = self.get_object()
+        info.status = 'delete'
+        info.delete()
+        return Response({"message":"Ma'lumot muvaffaqiyatli o'chirildi."})
+
+    def update(self, request, *args, **kwargs):
+        info = self.get_object()
+        data = request.data
+
+        try:
+            info.body = data['body'] if 'body' in data else info.body
+            info.photo = data['photo'] if 'photo' in data else info.photo
+
+            info.save()
+            serializer = Personal_InfoSerializer(info)  
+            return Response(serializer.data)
+        except Exception as e:
+            return Response({'errors':"Ma'lumotlarni saqlashda xatolik sodir bo'ladi!!!"})
 

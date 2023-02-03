@@ -1,6 +1,6 @@
 from rest_framework import serializers
 
-from mainapp.models import Post
+from mainapp.models import Post, Personal_Info
 
 
 class PostGETSerializer(serializers.ModelSerializer):
@@ -13,6 +13,10 @@ class PostGETSerializer(serializers.ModelSerializer):
         }
 
 
+class Personal_InfoAPISerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Personal_Info
+        fields = ('id','body','photo')
 
 
 

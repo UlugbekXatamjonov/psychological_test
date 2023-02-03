@@ -43,6 +43,13 @@ class Post(models.Model):
         return self.title
 
 
+class Personal_Info(models.Model): # new
+    body = models.CharField(max_length = 350, verbose_name="Malumotlar")
+    photo = models.ImageField(upload_to="personal_info")
+    created_at = models.DateTimeField(auto_now=True)
 
+    class Meta:
+        ordering = ("-created_at",)
 
-
+    def __str__(self):
+        return self.body

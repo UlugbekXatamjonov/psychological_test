@@ -1,6 +1,6 @@
 from django.contrib import admin
 
-from .models import Contact, Post
+from .models import Contact, Post, Personal_Info
 
 # Register your models here.
 
@@ -17,4 +17,9 @@ class BlogAdmin(admin.ModelAdmin):
 	list_filter = ('status', 'created_at')
 	ordered_by  =('-status', '-created_at')
 
+
+@admin.register(Personal_Info)# new
+class Personal_Info(admin.ModelAdmin):
+	list_display = ('id', 'body', 'created_at')
+	list_filter = ('created_at',)
 

@@ -89,6 +89,7 @@ class CategoryViewSet(viewsets.ModelViewSet):
             contact.body = data['body'] if 'body' in data else contact.body
             contact.category_form = data['category_form'] if 'category_form' in data else contact.category_form
             contact.ball35 = data['ball35'] if 'ball35' in data else contact.ball35
+            contact.status = data['status'] if 'status' in data else contact.status
 
             contact.save()
             serializer = CategorySerializer(contact)
@@ -105,8 +106,8 @@ class InfoViewSet(viewsets.ModelViewSet):
 
     def create(self, request, *args, **kwargs):
         data = request.data
-        api = json.loads(request.data['test_api'])
-        
+        api0 = json.loads(request.data['test_api'])
+        api = api0[0]
         
         """ 
         ##########################################################################################################
@@ -294,7 +295,7 @@ class InfoViewSet(viewsets.ModelViewSet):
             new_info.save()
             serializer = InfoSerializer(new_info)
             # return Response(serializer.data) # javob ketishi kk shu yerda
-            
+            """ ---------------------------------  TASXIS -------------------------------------- """
             if ishora_1:
                 if ishora_2: # E1 - E2 + 35 ball
                     return Response({'message':f"Hurmatli {data['full_name']} ! Siz testdan toplagan ball: {total_ball} ball",
@@ -332,6 +333,8 @@ class InfoViewSet(viewsets.ModelViewSet):
                                     })
         except Exception as e:
             return Response({'errors':"Ma'lumot to'liq emas!!!"})
+        
+        """ ---------------------------------  TASXIS -------------------------------------- """
 
     def destroy(self, request, *args, **kvargs):
         info = self.get_object()
@@ -426,7 +429,7 @@ class TestViewSet(viewsets.ModelViewSet):
         category =  False        
         if 'category' in test_data:
             try:
-                category = Category.objects.get(pk=test_data['category'])
+                category = Category.objects.get(pk=str(test_data['category']))
             except Exception as e:
                 return Response({"category":"Bunday Kategoriya mavjud emas!!!"})
             
@@ -492,9 +495,11 @@ class TestViewSet(viewsets.ModelViewSet):
                 test_data.form = form if form else test_data.form
                 test_data.category = category
                 test_data.body = data['body'] if 'body' in data else test_data.body
+                test_data.status = data['status'] if 'status' in data else test_data.status
             else:
                 test_data.form = form if form else test_data.form
                 test_data.body = data['body'] if 'body' in data else test_data.body
+                test_data.status = data['status'] if 'status' in data else test_data.status
             test_data.save()
             serializer = TestSerializer(test_data)
             return Response(serializer.data)
@@ -556,9 +561,11 @@ class TestAnswerViewSet(viewsets.ModelViewSet):
                 test_answear_data.test_id = test_id
                 test_answear_data.answer_text = data['answer_text'] if 'answer_text' in data else test_answear_data.answer_text
                 test_answear_data.ball = data['ball'] if 'ball' in data else test_answear_data.ball
+                test_answear_data.status = data['status'] if 'status' in data else test_answear_data.status
             else:
                 test_answear_data.answer_text = data['answer_text'] if 'answer_text' in data else test_answear_data.answer_text
                 test_answear_data.ball = data['ball'] if 'ball' in data else test_answear_data.ball
+                test_answear_data.status = data['status'] if 'status' in data else test_answear_data.status
             test_answear_data.save()
             serializer = Test_answerSerializer(test_answear_data)
             return Response(serializer.data)

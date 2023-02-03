@@ -1,6 +1,6 @@
 from rest_framework import serializers
 
-from .models import Post, Contact
+from .models import Post, Contact, Personal_Info
 
 
 class PostSerializer(serializers.ModelSerializer):
@@ -22,3 +22,10 @@ class ContactSerializer(serializers.ModelSerializer):
             'url': {'lookup_field': 'slug'}
         }
              
+
+class Personal_InfoSerializer(serializers.ModelSerializer): # new
+    class Meta:
+        model = Personal_Info
+        fields = ("__all__")
+        
+        
