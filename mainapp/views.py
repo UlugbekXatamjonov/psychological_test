@@ -66,7 +66,7 @@ class PostViewset(viewsets.ModelViewSet):
     queryset = Post.objects.all()
     serializer_class = PostSerializer
     lookup_field = 'slug'
-    permission_classes = [AllowAny]
+    permission_classes = [IsAuthenticated]
 
     def create(self, request, *args, **kwargs):
         data = request.data
@@ -103,6 +103,7 @@ class PostViewset(viewsets.ModelViewSet):
             post.title = data['title'] if 'title' in data else post.title
             post.body = data['body'] if 'body' in data else post.body
             post.photo = data['photo'] if 'photo' in data else post.photo
+            # post.video = data['video'] if 'video' in data else post.video
             post.status = data['status'] if 'status' in data else post.status
             post.save()
             serializer = PostSerializer(post)
@@ -111,12 +112,11 @@ class PostViewset(viewsets.ModelViewSet):
             return Response({'errors':"Ma'lumotlarni saqlashda xatolik sodir bo'ladi!!!"})
 
 
-
 class Personal_InfoViewset(viewsets.ModelViewSet):
     queryset = Personal_Info.objects.all()
     serializer_class = Personal_InfoSerializer
     # lookup_field = 'slug'
-    permission_classes = [AllowAny]
+    permission_classes = [IsAuthenticated]
 
     def create(self, request, *args, **kwargs):
         data = request.data
@@ -150,4 +150,7 @@ class Personal_InfoViewset(viewsets.ModelViewSet):
             return Response(serializer.data)
         except Exception as e:
             return Response({'errors':"Ma'lumotlarni saqlashda xatolik sodir bo'ladi!!!"})
+
+
+
 

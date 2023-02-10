@@ -23,9 +23,10 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = 'django-insecure-smntqkx((!t*b&7^54$3vsvj7mapsv+=3ap_-*!!6+y47r)fm5'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = False
 
-ALLOWED_HOSTS = ["*"]
+
+ALLOWED_HOSTS = ['*']
 
 
 # Application definition
@@ -153,7 +154,7 @@ USE_TZ = True
 STATIC_URL = '/static/'
 STATICFILES_DIRS = [
     BASE_DIR.joinpath('static')
-]   
+]
 STATIC_ROOT = 'staticfiles'
 
 # Media settings
@@ -173,6 +174,9 @@ CORS_ORIGIN_WHITELIST = (
     'http://localhost:8080',
     'http://localhost:8001',
     'http://localhost:800',
+    'http://backend.tibbiypsixologiya.uz',
+    'http://tibbiypsixologiya.uz',
+    'https://dashboardp.vercel.app',
 
 )
 

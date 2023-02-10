@@ -42,7 +42,6 @@ class Post(models.Model):
     def __str__(self):
         return self.title
 
-
 class Personal_Info(models.Model): # new
     body = models.CharField(max_length = 350, verbose_name="Malumotlar")
     photo = models.ImageField(upload_to="personal_info")
@@ -53,3 +52,6 @@ class Personal_Info(models.Model): # new
 
     def __str__(self):
         return self.body
+
+
+

@@ -21,6 +21,14 @@ DIAGNOSIS = (
 	('well',"Sizning holatingiz a'lo"),
 )
 
+
+TUR = (
+	('xavotir', "Xavotir HADS"),
+ 	('depressiya', "Depressiya HADS"),
+	('boshqa', "Boshqa"),
+	('yoq', "Yo'q")
+)
+
 class Category(models.Model):
 	name = models.CharField(max_length=250, unique=True, verbose_name="Categoriya nomi")
 	slug = AutoSlugField(populate_from='name', unique=True)
@@ -30,7 +38,8 @@ class Category(models.Model):
 	body = models.TextField(verbose_name="Kategoriya haqida", blank=True, null=True)
 	category_form = models.BooleanField(default=False, verbose_name="Kategoriyada formula bor/yo'q", blank=True, null=True)
 	ball35 = models.PositiveIntegerField(verbose_name="Formulaga qo'shiladigan ball", default=0,  blank=True, null=True)
-	
+	tur = models.CharField(max_length=50, choices=TUR, default='yoq' ,null=True, blank=True)	
+ 
 	status = models.CharField(max_length=50, choices=STATUS, default='active', verbose_name="Holati")
 	
 	created_at = models.DateTimeField(auto_now=True)

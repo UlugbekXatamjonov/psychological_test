@@ -49,7 +49,3 @@ class Personal_InfoAPIViewSet(viewsets.ModelViewSet):
         return Response({"success":"Ma'lumotlar muvaffaqiyatli yangilandi. -:)"})
     
     
-    
-    
-    
-    

@@ -74,8 +74,13 @@ class InfoAPIViewSet(viewsets.ModelViewSet):
     def create(self, request, *args, **kwargs):
             return Response({"success":"Ma'lumotlar muvaffaqiyatli qo'shildi. -:)"})
     
-    def destroy(self, request, *args, **kwargs):
-        return Response({"success":"Ma'lumotlar muvaffaqiyatli o'chirildi. -:)"})
+    # def destroy(self, request, *args, **kwargs):
+    #     return Response({"success":"Ma'lumotlar muvaffaqiyatli o'chirildi. -:)"})
+    def destroy(self, request, *args, **kvargs):
+        info = self.get_object()
+        # info.status = 'delete'
+        info.delete()
+        return Response({"message":"Ma'lumot muvaffaqiyatli o'chirildi."})
     
     def partial_update(self, request, *args, **kwargs):
         return Response({"success":"Ma'lumotlar muvaffaqiyatli yangilandi. -:)"})

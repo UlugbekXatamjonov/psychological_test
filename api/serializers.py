@@ -19,4 +19,3 @@ class Personal_InfoAPISerializer(serializers.ModelSerializer):
         fields = ('id','body','photo')
 
 
-

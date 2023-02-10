@@ -22,4 +22,3 @@ class BlogAdmin(admin.ModelAdmin):
 class Personal_Info(admin.ModelAdmin):
 	list_display = ('id', 'body', 'created_at')
 	list_filter = ('created_at',)
-

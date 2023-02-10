@@ -27,5 +27,3 @@ class Personal_InfoSerializer(serializers.ModelSerializer): # new
     class Meta:
         model = Personal_Info
         fields = ("__all__")
-        
-        

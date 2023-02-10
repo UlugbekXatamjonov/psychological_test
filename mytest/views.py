@@ -17,7 +17,7 @@ class CategoryViewSet(viewsets.ModelViewSet):
     queryset = Category.objects.all()
     serializer_class = CategorySerializer
     lookup_field = 'slug'
-    permission_classes = [AllowAny] 
+    permission_classes = [IsAuthenticated] 
     
     def create(self, request, *args, **kwargs):
         category_data = request.data
@@ -35,7 +35,7 @@ class CategoryViewSet(viewsets.ModelViewSet):
         categories = Category.objects.filter(status='active')   
         for category in categories:
                 if category.name == category_data['name']:
-                    return Response({"name":"Bunday nomdagi kategoriya mavjud! Iltimos boshqa nom yozing"})                
+                    return Response({"error":"Bunday nomdagi kategoriya mavjud! Iltimos boshqa nom yozing"})                
         # and  <--- Bir Categoriya ikki marta takrorlanmasligi un  --->
         
         try:
@@ -47,6 +47,7 @@ class CategoryViewSet(viewsets.ModelViewSet):
                     body = category_data['body'],
                     category_form = category_data['category_form'],
                     ball35 = category_data['ball35'],
+                    tur = category_data['tur'],
                     )
             else:
                 new_category = Category.objects.create(
@@ -54,6 +55,7 @@ class CategoryViewSet(viewsets.ModelViewSet):
                     body = category_data['body'],
                     category_form = category_data['category_form'],
                     ball35 = category_data['ball35'],
+                    tur = category_data['tur'],
                     )
              # and  <--- parent maydoni ihtiyoriy bo'lgani un agar u kiritilsa if kiritilmasa esle --->
              
@@ -90,6 +92,7 @@ class CategoryViewSet(viewsets.ModelViewSet):
             contact.category_form = data['category_form'] if 'category_form' in data else contact.category_form
             contact.ball35 = data['ball35'] if 'ball35' in data else contact.ball35
             contact.status = data['status'] if 'status' in data else contact.status
+            contact.tur = data['tur'] if 'tur' in data else contact.tur
 
             contact.save()
             serializer = CategorySerializer(contact)
@@ -108,6 +111,12 @@ class InfoViewSet(viewsets.ModelViewSet):
         data = request.data
         api0 = json.loads(request.data['test_api'])
         api = api0[0]
+        # print("***************************")
+        # pprint(data)
+        # print("***************************")
+        # pprint(api)
+        # print("***************************")
+        
         
         """ 
         ##########################################################################################################
@@ -169,10 +178,10 @@ class InfoViewSet(viewsets.ModelViewSet):
         
         
         
-        print("---------------------")
+        # print("---------------------")
         # pprint(total_answers[0]['ball'])
         
-        print("---------------------")
+        # print("---------------------")
 
         """ Barcha testlar uchun """
         t_ball = 0 # hamma javoblardagi ballar yi'gindisi   
@@ -204,6 +213,18 @@ class InfoViewSet(viewsets.ModelViewSet):
     
         total_ball = 0 # testning ummumiy balli
         tashxis = " Tashxis hali qo'yilmagan "
+        tafsiya = False
+        xavotir = False
+        depressiya = False
+        boshqa = False
+        
+        if category[0]['tur'] == 'xavotir':
+            xavotir = True
+        if category[0]['tur'] == 'depressiya':
+            depressiya = True
+        if category[0]['tur'] == 'boshqa':
+            boshqa = True
+        
         
         ishora_1 = 0
         ishora_2 = 0
@@ -220,8 +241,10 @@ class InfoViewSet(viewsets.ModelViewSet):
                     tashxis = "Yengil daraja"
                 elif total_ball <= 45:
                     tashxis = "O'rta daraja"
+                    tafsiya = True
                 elif total_ball >= 46:
                     tashxis = "Kuchli daraja"
+                    tafsiya = True
                 else:
                     tashxis = "Tashxis qo'yishda xatolik !!!"
                 # print(tashxis)
@@ -237,13 +260,15 @@ class InfoViewSet(viewsets.ModelViewSet):
                     tashxis = "Yengil daraja "
                 elif total_ball <= 55:
                     tashxis = "O'rta daraja "
+                    tafsiya = True
                 elif total_ball <= 82:
                     tashxis = "Og'ir daraja"
+                    tafsiya = True
                 else:
                     tashxis = "Tashxis qo'yishda xatolik !!!"
                 # print(tashxis)
                     
-        else: # ✅✅✅ Sinovdan o'tdi
+        elif xavotir:
             total_ball += t_ball # Javobdagi barcha ballar yig'indisi
             # print(f"t_ball = {t_ball}")
             
@@ -251,12 +276,67 @@ class InfoViewSet(viewsets.ModelViewSet):
             if total_ball <= 7:
                 tashxis = "Norma"
             elif total_ball <= 10:
-                tashxis = "Subklinik xavotir / Dipressia"
+                tashxis = "Subklinik xavotir"
+                tafsiya = True
             elif total_ball >= 11:
-                tashxis = "Kuchlik xavotir / Dipressia"
+                tashxis = "Kuchlik xavotir"
+                tafsiya = True
             else:
                 tashxis = "Tashxis qo'yishda xatolik !!!"
             # print(tashxis)
+            
+        elif depressiya:
+            total_ball += t_ball # Javobdagi barcha ballar yig'indisi
+            # print(f"t_ball = {t_ball}")
+            
+            """ Tashxis """
+            if total_ball <= 7:
+                tashxis = "Norma"
+            elif total_ball <= 10:
+                tashxis = "Subklinik Dipressia"
+                tafsiya = True
+            elif total_ball >= 11:
+                tashxis = "Kuchlik Dipressia"
+                tafsiya = True
+            else:
+                tashxis = "Tashxis qo'yishda xatolik !!!"
+                
+        elif boshqa:
+            total_ball += t_ball # Javobdagi barcha ballar yig'indisi
+            # print(f"t_ball = {t_ball}")
+            
+            """ Tashxis """
+            if total_ball <= 7:
+                tashxis = "Norma"
+            elif total_ball <= 10:
+                tashxis = "Subklinik"
+                tafsiya = True
+            elif total_ball >= 11:
+                tashxis = "Kuchlik"
+                tafsiya = True
+            else:
+                tashxis = "Tashxis qo'yishda xatolik !!!"
+            # print(tashxis)
+            
+        # else:
+        #     total_ball += t_ball # Javobdagi barcha ballar yig'indisi
+        #     # print(f"t_ball = {t_ball}")
+            
+        #     """ Tashxis """
+        #     if total_ball <= 7:
+        #         tashxis = "Norma"
+        #     elif total_ball <= 10:
+        #         tashxis = "Subklinik xavotir / Dipressia"
+        #         tafsiya = True
+        #     elif total_ball >= 11:
+        #         tashxis = "Kuchlik xavotir / Dipressia"
+        #         tafsiya = True
+        #     else:
+        #         tashxis = "Tashxis qo'yishda xatolik !!!"
+            # print(tashxis)
+            
+            
+            
 
         # print(f"Testning ummumiy balli --> {total_ball}")
         
@@ -295,46 +375,47 @@ class InfoViewSet(viewsets.ModelViewSet):
             new_info.save()
             serializer = InfoSerializer(new_info)
             # return Response(serializer.data) # javob ketishi kk shu yerda
-            """ ---------------------------------  TASXIS -------------------------------------- """
+            
             if ishora_1:
                 if ishora_2: # E1 - E2 + 35 ball
-                    return Response({'message':f"Hurmatli {data['full_name']} ! Siz testdan toplagan ball: {total_ball} ball",
-                                    'tashxis':f"Sizga qo'yilgan tashxis: {tashxis}",
-                                    "tashxis_info":{
-                                        '1':"0 dan 30 ballgacha  yengil daraja ",
-                                        "2":"31 dan 45 ballgacha o'rta daraja",
-                                        "3":"46 dan yuqori ball  kuchli daraja"    
-                                        },
-                                    "doctor":"Shifokor, Tibbiy psiholog, psihoterapeft - Dedaxanov Dilshod Toxirovich",
-                                    "tel":"Tel: +998902750030"
-                                    })
+                    if tafsiya:
+                        return Response({'message':f"Hurmatli {data['full_name']} ! Sizning testdan toplagan ballingiz: {total_ball} ball",
+                                        'tashxis':f"Xulosa: {tashxis}",
+                                        "tafsiya":"Mutahasis tafsiyasini oling.",
+                                        "doctor":"Shifokor, Tibbiy psixolog, psixoterapeft - Dedaxanov Dilshod Toxirovich",
+                                        "tel":"Tel: +998902750030"
+                                        })
+                    else:
+                        return Response({'message':f"Hurmatli {data['full_name']} ! Sizning testdan toplagan ballingiz: {total_ball} ball",
+                                        'tashxis':f"Xulosa: {tashxis}"
+                                        })
                 else: # E1 + E2
-                    return Response({'message':f"Hurmatli {data['full_name']} ! Siz testdan toplagan ball: {total_ball} ball",
-                                    'tashxis':f"Sizga qo'yilgan tashxis: {tashxis}",
-                                    "tashxis_info":{
-                                        '1':"0 dan 40 ballgacha  yo'q ",
-                                        "2":"41 dan 48 ballgacha yengil daraja",
-                                        "3":"49 dan 55 ballgacha o'rta daraja",
-                                        "4":"55 dan yuqori ball  og'ir daraja"    
-                                        },
-                                    "doctor":"Shifokor, Tibbiy psiholog, psihoterapeft - Dedaxanov Dilshod Toxirovich",
-                                    "tel":"Tel: +998902750030"
-                                    })    
+                    if tafsiya:
+                        return Response({'message':f"Hurmatli {data['full_name']} ! Sizning testdan toplagan ballingiz: {total_ball} ball",
+                                        'tashxis':f"Xulosa: {tashxis}",
+                                        "tafsiya":"Mutahasis tafsiyasini oling.",
+                                        "doctor":"Shifokor, Tibbiy psixolog, psixoterapeft - Dedaxanov Dilshod Toxirovich",
+                                        "tel":"Tel: +998902750030"
+                                        })
+                    else:
+                        return Response({'message':f"Hurmatli {data['full_name']} ! Sizning testdan toplagan ballingiz: {total_ball} ball",
+                                        'tashxis':f"Xulosa: {tashxis}"
+                                        })   
             else: # Javobdagi barcha ballar yig'indisi   
-                return Response({'message':f"Hurmatli {data['full_name']} ! Siz testdan toplagan ball: {total_ball} ball",
-                                    'tashxis':f"Sizga qo'yilgan tashxis: {tashxis}",
-                                    "tashxis_info":{
-                                        '1':"0 dan 7 ballgacha  Norma ",
-                                        "2":"8 dan 10 ballgacha Subklinik xavotir / Dipressia",
-                                        "3":"11 dan yuqori ball Kuchlik xavotir / Dipressia"    
-                                        },
-                                    "doctor":"Shifokor, Tibbiy psiholog, psihoterapeft - Dedaxanov Dilshod Toxirovich",
+                if tafsiya:
+                    return Response({'message':f"Hurmatli {data['full_name']} ! Sizning testdan toplagan ballingiz: {total_ball} ball",
+                                    'tashxis':f"Xulosa: {tashxis}",
+                                    "tafsiya":"Mutahasis tafsiyasini oling.",
+                                    "doctor":"Shifokor, Tibbiy psixolog, psixoterapeft - Dedaxanov Dilshod Toxirovich",
                                     "tel":"Tel: +998902750030"
                                     })
+                else:
+                    return Response({'message':f"Hurmatli {data['full_name']} ! Sizning testdan toplagan ballingiz: {total_ball} ball",
+                                    'tashxis':f"Xulosa: {tashxis}"
+                                    })
+                    
         except Exception as e:
             return Response({'errors':"Ma'lumot to'liq emas!!!"})
-        
-        """ ---------------------------------  TASXIS -------------------------------------- """
 
     def destroy(self, request, *args, **kvargs):
         info = self.get_object()
@@ -365,12 +446,14 @@ class InfoViewSet(viewsets.ModelViewSet):
                 contact.test_ball = total_ball # testning balli
                 contact.test_result = tashxis # testning tashxisi
                 contact.test_api = data['test_api'] if 'test_api' in data else contact.test_api
+                contact.test_api = data['test_api'] if 'test_api' in data else contact.test_api
             else:
                 contact.full_name = data['full_name'] if 'full_name' in data else contact.full_name
                 contact.age = data['age'] if 'age' in data else contact.age
                 contact.gender = data['gender'] if 'gender' in data else contact.gender
                 contact.test_ball = total_ball # testning balli
                 contact.test_result = tashxis # testning tashxisi
+                contact.test_api = data['test_api'] if 'test_api' in data else contact.test_api
                 contact.test_api = data['test_api'] if 'test_api' in data else contact.test_api
             contact.save()
             serializer = InfoSerializer(contact)
@@ -384,7 +467,7 @@ class FormViewSet(viewsets.ModelViewSet):
     queryset = Form.objects.all()
     serializer_class = FormSerializer
     lookup_field = 'slug'
-    permission_classes = [AllowAny]
+    permission_classes = [IsAuthenticated]
     
     def create(self, request, *args, **kwargs):
         data = request.data
@@ -421,7 +504,7 @@ class TestViewSet(viewsets.ModelViewSet):
     queryset = Test.objects.all()
     serializer_class = TestSerializer
     lookup_field = 'slug'
-    permission_classes = [AllowAny]
+    permission_classes = [IsAuthenticated]
         
     def create(self, request, *args, **kwargs):
         test_data = request.data
@@ -510,7 +593,7 @@ class TestViewSet(viewsets.ModelViewSet):
 class TestAnswerViewSet(viewsets.ModelViewSet):
     queryset = Test_answer.objects.all()
     serializer_class = Test_answerSerializer
-    permission_classes  =[AllowAny]
+    permission_classes  =[IsAuthenticated]
 
     def create(self, request, *args, **kwargs):
         test_answear_data = request.data
