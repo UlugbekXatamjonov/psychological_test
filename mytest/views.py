@@ -131,7 +131,7 @@ class InfoViewSet(viewsets.ModelViewSet):
         answer_tests = api.get('tests') # belgilangan test va javob idlari
         
         answer_tests_id = [] # belgilangan test idlari
-        for test in answer_tests:
+        for test in answer_tests:   
             answer_tests_id.append(test['test_id'])
             
         answer_answer_id = [] # belgilangan javoblar idlari
@@ -178,7 +178,7 @@ class InfoViewSet(viewsets.ModelViewSet):
         
         
         
-        # print("---------------------")
+        # print("---------------------")    
         # pprint(total_answers[0]['ball'])
         
         # print("---------------------")
