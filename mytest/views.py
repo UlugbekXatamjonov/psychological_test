@@ -98,7 +98,7 @@ class CategoryViewSet(viewsets.ModelViewSet):
             serializer = CategorySerializer(contact)
             return Response(serializer.data)
         except Exception as e:
-            return Response({'errors':"Ma'lumotlarni saqlashda xatolik sodir bo'ladi!!!"})
+            return Response({'errors':"Ma'lumotlarni saqlashda xatolik sodir bo'ladi!!!"})  
 
 
 class InfoViewSet(viewsets.ModelViewSet):
